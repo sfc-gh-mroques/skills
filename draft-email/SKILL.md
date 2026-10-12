@@ -21,12 +21,21 @@ Préparer un email professionnel — souvent un récapitulatif de données —
 
 1. Rassembler les données à communiquer (si issues de Cortex Analyst : reprendre les chiffres exacts, arrondir les € au K et les pourcentages à 1 décimale).
 2. Construire le corps HTML avec le template professionnel (voir gabarit ci-dessous).
-3. Appeler **Gmail → `gmail_create_draft`** avec :
+3. **Encoder l'objet en RFC 2047** (`=?UTF-8?B?<base64 des bytes UTF-8>?=`). Le connecteur Gmail corrompt les sujets passés en texte brut : l'encodage est obligatoire, même sans accents. Écrire d'abord le sujet normalement, avec tous ses accents (ne jamais les retirer).
+   - **Si tu as accès à un outil d'exécution de code (code execution / sandbox) : exécute l'encodage dedans, ne l'encode PAS toi-même.** Utilise exactement ce code :
+     ```python
+     import base64
+     subject = "<sujet en clair, avec accents>"
+     print(f"=?UTF-8?B?{base64.b64encode(subject.encode('utf-8')).decode()}?=")
+     ```
+     Reprends la sortie telle quelle, sans la modifier.
+   - **Sinon (aucun outil de code disponible)** : encode manuellement au même format. Procédure : (1) bytes UTF-8 du sujet, (2) base64, (3) wrapper `=?UTF-8?B?` ... `?=`. Exemple : « Réunion Évolution données » → `=?UTF-8?B?UsOpdW5pb24gw4l2b2x1dGlvbiBkb25uw6llcw==?=`.
+4. Appeler **Gmail → `gmail_create_draft`** avec :
    - `to`, `cc` (si fourni)
-   - `subject` — **ENCODAGE RFC 2047 OBLIGATOIRE, SANS EXCEPTION** : le champ subject souffre d'un bug d'encodage côté connecteur. La SEULE solution qui fonctionne est d'encoder le sujet en RFC 2047 base64 UTF-8. Tu DOIS encoder, même si le sujet contient des accents. Ne JAMAIS passer le sujet en texte brut, ne JAMAIS retirer les accents, ne JAMAIS utiliser de l'ASCII « pour être safe ». Le format est : `=?UTF-8?B?<base64 des bytes UTF-8 du sujet>?=`. Procédure : (1) écrire le sujet normalement avec tous ses accents, (2) convertir en bytes UTF-8, (3) encoder ces bytes en base64, (4) entourer du wrapper `=?UTF-8?B?` ... `?=`. Exemple : « Réunion Évolution données » → `=?UTF-8?B?UsOpdW5pb24gw4l2b2x1dGlvbiBkb25uw6llcw==?=`. C'est un IMPÉRATIF — tout autre choix produira du mojibake.
+   - `subject` = la valeur encodée obtenue à l'étape 3
    - `body` = HTML, `isHtml: true`. Inclure `<meta charset="UTF-8">` dans le `<head>`.
-4. **Par défaut, créer un brouillon** (jamais d'envoi direct).
-5. Confirmer la création et proposer : envoyer, ajouter des destinataires en copie, modifier le texte/la mise en forme.
+5. **Par défaut, créer un brouillon** (jamais d'envoi direct).
+6. Confirmer la création et proposer : envoyer, ajouter des destinataires en copie, modifier le texte/la mise en forme.
 
 # Gabarit HTML
 
@@ -40,7 +49,7 @@ Préparer un email professionnel — souvent un récapitulatif de données —
 
 # Sortie
 
-- Confirmation du brouillon créé (destinataire + objet)
+- Confirmation du brouillon créé (destinataire + objet en clair)
 - Rappel qu'aucun envoi n'a été effectué
 - Options de suite (envoi / CC / retouches)
 
@@ -50,4 +59,4 @@ Préparer un email professionnel — souvent un récapitulatif de données —
 - Signer avec le nom réel de l'utilisateur.
 - Respecter la langue de la demande.
 - Ne pas dupliquer les mêmes chiffres en double dans le texte et le tableau.
-- **Encodage** : le sujet doit toujours être passé en RFC 2047 base64 UTF-8 (`=?UTF-8?B?...?=`) pour contourner un bug d'encodage du connecteur. Le body HTML doit déclarer `<meta charset="UTF-8">` dans le `<head>` (le body n'est pas affecté par le bug).
+- **Encodage** : sujet toujours en RFC 2047 base64 UTF-8, calculé via l'outil d'exécution de code dès qu'il est disponible. Le body HTML doit déclarer `<meta charset="UTF-8">` dans le `<head>` (le body n'est pas affecté par le bug).
