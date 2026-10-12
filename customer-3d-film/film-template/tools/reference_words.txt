@@ -1,0 +1,23 @@
+# Mots du gabarit (ou du film précédent) à ne plus retrouver dans dist/film.html (un par ligne, sensible à la casse).
+# Pré-rempli avec les noms fictifs du gabarit : après adaptation, residue.py ne doit plus rien trouver
+# (retirer d'ici les mots que le client garde volontairement, ex. « Capitale »).
+Belmont
+Castelmar
+Rivebelle
+Montclair
+Haute-Vallée
+Lacroix
+Saint-Aubel
+Port-Neuf
+Capitale
+Dupont
+Alex Martin
+A. Martin
+Sophie Martin
+Sophie M.
+Julien P.
+CLI_003847
+MIS-2847
+Source A
+Source B
+Source C
